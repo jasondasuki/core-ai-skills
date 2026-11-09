@@ -35,12 +35,12 @@ model so the defaults can be tuned. Claude Code only: it needs the Workflow tool
 If the arguments start with `cost`, run:
 
 ```
-python3 -I {{CORE_DIR}}/scripts/cost.py <N> {{PROJECTS_DIRS}}
+python3 -I {{CORE_DIR}}/scripts/cost.py <N> {{PROJECTS_DIRS}} --scan {{SCAN_MODEL}} --verify {{VERIFY_MODEL}} --max {{MAX_AGENTS}}
 ```
 
 N is the number after `cost` (default 1). Show the table as-is, then at most three lines: which
-phase cost most, whether a stage ran on a bigger model than its job needs (scan stages should be
-`{{SCAN_MODEL}}`, verify `{{VERIFY_MODEL}}`), and one concrete change for next time. Cache reads
+phase cost most, what the `!` flags say (a stage off its model, a run over the cap), and one
+concrete change for next time. Cache reads
 bill at about a tenth of fresh input, so judge cost by cache writes and output first.
 
 ## Mode: run (any other arguments)
@@ -55,10 +55,15 @@ The arguments are the task.
 4. **Write the script** with these defaults:
    - Under `{{MAX_AGENTS}}` agents. For long lists, batch items per agent and `log()` anything
      dropped.
+   - Verify and judge in batches of 5-10 items per agent, never one agent per item. Why: one
+     verifier per finding is what blows past the cap.
    - Per `agent()` call: scan, search, list, fetch → `model: '{{SCAN_MODEL}}', effort:
      '{{SCAN_EFFORT}}'`; verify and judge → `model: '{{VERIFY_MODEL}}'`; final synthesis → omit
      `model` (session model).
    - `agentType: 'runner'` only for fixed mechanical checks, if that agent type exists.
    - Parallel file edits use `isolation: 'worktree'`.
+   - **Check before launch:** reread the script and confirm every `agent()` call has the model
+     its stage needs (synthesis has none), and that the worst-case agent count, including
+     per-item fan-out, is under `{{MAX_AGENTS}}`. Fix it before calling Workflow.
 5. **When it completes**, give the result first, then one cost line from Mode: cost with N=1
    (agents, minutes, cache writes, output).
