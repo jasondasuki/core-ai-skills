@@ -22,7 +22,8 @@ if not runs:
     raise SystemExit(f"No workflow runs found under: {' '.join(a.dirs)}")
 
 K = ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
-STAGES = ((a.scan, ("scan", "search", "list", "fetch")), (a.verify, ("verify", "validate", "judge")))
+STAGES = ((a.scan, ("scan", "search", "list", "fetch")), (a.verify, ("verify", "validate", "judge", "edit", "write")))
+OTHER = ("synth",)  # synthesis runs on the session model, so no model check
 
 def fmt(x): return f"{x/1e6:.2f}M" if x >= 1e6 else f"{x/1e3:.0f}k" if x >= 1e3 else str(x)
 def ts(s): return datetime.fromisoformat(s.replace("Z", "+00:00"))
@@ -31,6 +32,8 @@ def flag(ph, model):
     for want, words in STAGES:
         if want and any(w in ph.lower() for w in words) and want not in model:
             return f"! want {want}"
+    if not any(w in ph.lower() for _, words in STAGES for w in words + OTHER):
+        return "! no stage word"
     return ""
 
 def active_minutes(spans):
