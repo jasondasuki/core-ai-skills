@@ -261,7 +261,7 @@ changes are always noted (a count on a fresh run, a yes/no on a cached one). The
 script cannot see where a request starts, so a new request inside the window also
 reuses the result.
 
-Optional, all off by default, set in the environment:
+Optional, set in the environment:
 
 - `scripts/preflight-warm.sh` fills the memory in the background at session start
   (a `SessionStart` hook), so handlers find a fresh result and never wait on the
@@ -270,10 +270,14 @@ Optional, all off by default, set in the environment:
   default 21600 seconds) and re-verifies in a detached background run. The
   trade-off: a core that fell behind in that window is caught on the next run, not
   this one.
-- `PREFLIGHT_FF=1` fast-forwards (`merge --ff-only`) when the checkout is only
-  behind: on the expected branch, no local commits, no changes to tracked files.
-  Anything else still pauses. It is the user's choice to set it, since it changes
-  the checkout the handler text says not to touch.
+- `PREFLIGHT_FF=0` turns off the automatic sync described below and makes the
+  script read-only: a wrong branch or a behind checkout pauses.
+
+On by default: the script switches to the expected branch (`git switch`) and, when
+the checkout is only behind, fast-forwards (`merge --ff-only`). Both refuse rather
+than overwrite local changes, and it never stashes, resets, or merges, so a
+switch that would lose changes or a branch with unpushed local commits still
+pauses with the fix commands.
 
 Never edit this step out of a handler to make a skill run; change the variables
 or fix the repo instead.

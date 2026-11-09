@@ -19,8 +19,9 @@ computer and this agent setup. The general instructions live in the shared core.
    run, **stop**: do not read the core and do not run the skill. Say so in the
    first lines of your reply: which skill, what the script found, and the fix
    commands it printed. If a notification tool is available, also send one short
-   notification so the user sees it when away. Run no git command that changes
-   the checkout (no switch, pull, stash, or reset); fixing it is the user's call.
+   notification so the user sees it when away. The script already switched to the branch
+   and pulled where it safely could; run no other git command on the checkout
+   (no stash, reset, or rebase); fixing what it could not is the user's call.
    Then wait. If the user answers "proceed anyway", continue for this run only
    and say in your final answer that the core was not verified current.
 2. Read `<<CORE_DIR>>/SKILL.md` in full, plus any file in that directory it tells

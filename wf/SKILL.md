@@ -52,8 +52,12 @@ The arguments are the task.
    and skip step 1.
 1. **Elaborate and confirm, inline** (no agent: the scout already holds the context). Rewrite
    the task as a precise prompt (goal, scope and where to look, what counts as done, output
-   shape, constraints, anything ambiguous). Show it, then ask the user (AskUserQuestion if
-   available): use it, edit it, or use the original. Wait for the answer; the chosen text is the
+   shape, constraints, anything ambiguous). Ask the user (AskUserQuestion if available): use it,
+   edit it, or use the original. Put the full elaborated prompt in the `preview` of the "use it"
+   option and the original task in the `preview` of "use the original". Why: while the question
+   dialog is open the user sees only the dialog, not text written before it, so a prompt shown
+   only in chat is invisible at the moment they choose. Without AskUserQuestion, print the
+   prompt in a fenced block and end the turn with the question. Wait for the answer; the chosen text is the
    task from here on. Skip this step if the user says "no elaborate" in the arguments.
 2. **Load** the `workflow-authoring` skill.
 3. **Show the plan in 3-5 lines**: phases, agents per phase, model per phase, rough tokens (about

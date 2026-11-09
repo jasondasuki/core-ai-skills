@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Preflight for a handler: is the skills repo holding the core on the expected
-# branch and up to date with its remote? Read-only except for `git fetch`, which
-# only updates remote-tracking refs. Never switches, pulls, stashes, or resets
-# (unless PREFLIGHT_FF=1 is set, see below).
+# Preflight for a handler: put the skills repo holding the core on the expected
+# branch and bring it up to date with its remote, then confirm. By default it
+# switches to the branch (`git switch`) and fast-forwards (`merge --ff-only`).
+# Both refuse rather than overwrite local changes, and it never stashes, resets,
+# or creates a merge commit; anything it cannot do safely pauses instead.
 #
 # Usage: preflight.sh <core-dir> <branch> <remote>
 # Exit:  0 = ok to run the skill, 1 = pause and tell the user (reasons printed)
@@ -24,9 +25,9 @@
 #                         younger than PREFLIGHT_STALE (default 21600) is accepted
 #                         now and re-verified by a detached background run. A
 #                         "behind" found later pauses the NEXT run, not this one.
-#   PREFLIGHT_FF=1        when only behind (no local commits, clean tracked files,
-#                         on the expected branch), fast-forward with `merge --ff-only`
-#                         instead of pausing. Never creates a merge or discards work.
+#   PREFLIGHT_FF=1        (default) switch to the expected branch and fast-forward
+#                         when behind with no local commits. PREFLIGHT_FF=0 makes the
+#                         script read-only again: wrong branch or behind pauses.
 set -u
 
 core="${1:?usage: preflight.sh <core-dir> <branch> <remote>}"
@@ -62,11 +63,11 @@ pause() {
     for n in "${notes[@]}"; do echo "  - $n"; done
   fi
   if [ -n "${root:-}" ]; then
-    echo "to fix (your call, nothing was changed):"
+    echo "to fix (your call; the automatic switch/pull could not finish safely):"
     echo "  git -C \"$root\" switch $branch"
     echo "  git -C \"$root\" pull --ff-only $remote $branch"
-    echo "  (commit or stash local changes first if the switch complains)"
-    echo "  or set PREFLIGHT_FF=1 to let this check fast-forward a clean checkout itself"
+    echo "  (commit or stash local changes first if the switch complains;"
+    echo "   rebase or reset local commits yourself if the branch has diverged)"
   fi
   exit 1
 }
@@ -101,18 +102,30 @@ if ! git -C "$root" rev-parse --verify --quiet HEAD >/dev/null; then
 fi
 
 current="$(git -C "$root" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "(detached HEAD)")"
-[ "$current" = "$branch" ] || problems+=("checked out on '$current', not '$branch'")
 
 if ! git -C "$root" remote get-url "$remote" >/dev/null 2>&1; then
   problems+=("no remote named '$remote' is configured, so 'latest' cannot be verified")
   pause
 fi
 
+ff="${PREFLIGHT_FF:-1}"
+# Switch to the expected branch; `git switch` refuses if local changes would be lost.
+if [ "$current" != "$branch" ] && [ "$ff" = "1" ]; then
+  git -C "$root" rev-parse --verify --quiet "refs/remotes/$remote/$branch" >/dev/null \
+    || git -C "$root" fetch --quiet "$remote" "$branch" >/dev/null 2>&1
+  if err="$(git -C "$root" switch --quiet "$branch" 2>&1)"; then
+    notes+=("switched from '$current' to '$branch'")
+    current="$branch"
+  else
+    notes+=("could not switch to '$branch': $(echo "$err" | head -n1 | cut -c1-140)")
+  fi
+fi
+[ "$current" = "$branch" ] || problems+=("checked out on '$current', not '$branch'")
+
 num() { case "$1" in ''|*[!0-9]*) echo "$2" ;; *) echo "$1" ;; esac; }
 ttl="$(num "${PREFLIGHT_TTL:-1800}" 1800)"
 stale_max="$(num "${PREFLIGHT_STALE:-21600}" 21600)"
 lazy="${PREFLIGHT_LAZY:-0}"
-ff="${PREFLIGHT_FF:-0}"
 head_sha="$(git -C "$root" rev-parse HEAD)"
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/skill-preflight"
 key="$(printf '%s\n%s\n%s\n' "$root" "$branch" "$remote" | shasum | cut -c1-16)"
@@ -195,13 +208,15 @@ if [ "$cached" -eq 0 ]; then
   ahead="$(echo "$counts" | awk '{print $1}')"
   behind="$(echo "$counts" | awk '{print $2}')"
 
-  # Opt-in: catch up by fast-forward when that cannot lose or merge anything.
-  if [ "$ff" = "1" ] && [ "$behind" -gt 0 ] && [ "$ahead" -eq 0 ] && [ "$current" = "$branch" ] \
-      && [ -z "$(git -C "$root" status --porcelain --untracked-files=no 2>/dev/null)" ]; then
-    if git -C "$root" merge --ff-only --quiet "$ref" >/dev/null 2>&1; then
-      notes+=("fast-forwarded $behind commit(s) from $remote/$branch (PREFLIGHT_FF=1)")
+  # Catch up by fast-forward; `merge --ff-only` refuses to overwrite local changes
+  # and never creates a merge commit.
+  if [ "$ff" = "1" ] && [ "$behind" -gt 0 ] && [ "$ahead" -eq 0 ] && [ "$current" = "$branch" ]; then
+    if err="$(git -C "$root" merge --ff-only --quiet "$ref" 2>&1)"; then
+      notes+=("pulled $behind commit(s) from $remote/$branch")
       behind=0
       head_sha="$(git -C "$root" rev-parse HEAD)"
+    else
+      notes+=("could not fast-forward: $(echo "$err" | head -n1 | cut -c1-140)")
     fi
   fi
 
