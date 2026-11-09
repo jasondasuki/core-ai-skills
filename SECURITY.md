@@ -5,7 +5,7 @@
 Please report security issues privately. Do not open a public issue.
 
 Use GitHub's private vulnerability reporting:
-<https://github.com/jasondasuki/sre-ai-skills/security/advisories/new>
+<https://github.com/jasondasuki/core-ai-skills/security/advisories/new>
 
 Include what you found, where it is, and how to reproduce it. Expect an
 acknowledgement within a week.

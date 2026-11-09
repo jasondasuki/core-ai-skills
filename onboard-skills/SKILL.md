@@ -1,6 +1,6 @@
 ---
 name: onboard-skills
-description: Onboard this computer's skill handlers from the personal skill repos - pull the latest of every skill repo (such as sre-ai-skills and secops-ai-skills), check which cores already have a handler in the skills directory, and create a handler for each core that lacks one, using the standard model defaults. Use whenever the user says onboard skills, sync skills, pull the latest skills, update my skill repos, set up handlers, new skills landed, check which skills have handlers, or is on a new or freshly cloned machine - even if they only say onboarding.
+description: Onboard this computer's skill handlers from the personal skill repos - pull the latest of every skill repo (such as core-ai-skills and secops-ai-skills), check which cores already have a handler in the skills directory, and create a handler for each core that lacks one, using the standard model defaults. Use whenever the user says onboard skills, sync skills, pull the latest skills, update my skill repos, set up handlers, new skills landed, check which skills have handlers, or is on a new or freshly cloned machine - even if they only say onboarding.
 ---
 
 # Onboard skills

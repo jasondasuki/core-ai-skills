@@ -5,7 +5,7 @@
 #
 # Usage: preflight-warm.sh [repo-dir ...]
 #   With no arguments, warms every sibling "*-ai-skills" repo of this one
-#   (sre-ai-skills, secops-ai-skills, ...) on branch main of remote origin.
+#   (core-ai-skills, secops-ai-skills, ...) on branch main of remote origin.
 # Honors the same PREFLIGHT_* environment as preflight.sh.
 set -u
 

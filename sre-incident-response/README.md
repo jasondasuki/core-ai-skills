@@ -189,7 +189,7 @@ Give the agent this prompt. Replace the repo URL if you host your own copy.
 ```
 Set up the sre-incident-response skill on this computer.
 
-1. Get the repo: https://github.com/jasondasuki/sre-ai-skills (clone it if it is not
+1. Get the repo: https://github.com/jasondasuki/core-ai-skills (clone it if it is not
    on disk). Follow ONBOARDING.md in the repo for the shared setup: the generator's
    handler, the preflight check and the checker. Do not commit, push or change repo
    settings.
