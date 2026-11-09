@@ -75,8 +75,8 @@ bash <core-ai-skills>/personal-skill-generator/scripts/preflight.sh <repo>/<core
 found and the fix commands it printed.
 
 Optional speed-ups (see the generator's "Preflight" section): a `SessionStart` hook that
-runs `scripts/preflight-warm.sh`, and the `PREFLIGHT_LAZY=1` / `PREFLIGHT_FF=1` environment
-variables.
+runs `scripts/preflight-warm.sh`, and the `PREFLIGHT_LAZY=1` / `PREFLIGHT_FF=0` (turn off the automatic
+switch-to-main and pull) environment variables.
 
 ## Step 3 - bootstrap the generator's handler
 
