@@ -1,6 +1,6 @@
 ---
 name: wf
-description: Run a task as a Claude Code dynamic workflow with cost-aware defaults (/wf <task>), or show the token cost of recent workflow runs per phase and model (/wf cost [N]). Use when the user types /wf, says "run this as a workflow with my defaults", or asks what a workflow run cost.
+description: Run a task as a Claude Code dynamic workflow with cost-aware defaults (/wf <task>), or show the token cost of recent workflow runs per phase and model (/wf cost [N]). Invoked only by typing /wf (model invocation is off).
 ---
 
 # wf
@@ -47,30 +47,33 @@ bill at about a tenth of fresh input, so judge cost by cache writes and output f
 
 The arguments are the task.
 
-0. **Elaborate and confirm.** Spawn one read-only agent (Explore type if it exists) with
-   `model: '{{SCAN_MODEL}}'`, `effort: '{{SCAN_EFFORT}}'`. Brief: rewrite the task as a precise
-   prompt (goal, scope and where to look, what counts as done, output shape, constraints,
-   anything ambiguous), checking names and paths with a few reads. Show the elaborated prompt,
-   then ask the user (AskUserQuestion if available): use it, edit it, or use the original. Wait
-   for the answer; the chosen text is the task from here on. Skip this step if the user says
-   "no elaborate" in the arguments.
-1. **Scout inline** (a few Glob/Grep/ls calls, no agents) to find the real work-list. If the task
-   fits one session (roughly under 5 items or one file), say so and do it inline; no workflow.
+0. **Scout inline** (a few Glob/Grep/ls calls, no agents) to find the real work-list. If the task
+   fits one session (roughly under 5 items or one file), say so and do it inline; no workflow,
+   and skip step 1.
+1. **Elaborate and confirm, inline** (no agent: the scout already holds the context). Rewrite
+   the task as a precise prompt (goal, scope and where to look, what counts as done, output
+   shape, constraints, anything ambiguous). Show it, then ask the user (AskUserQuestion if
+   available): use it, edit it, or use the original. Wait for the answer; the chosen text is the
+   task from here on. Skip this step if the user says "no elaborate" in the arguments.
 2. **Load** the `workflow-authoring` skill.
 3. **Show the plan in 3-5 lines**: phases, agents per phase, model per phase, rough tokens (about
    40k setup per agent plus the work). Then launch; the Workflow permission prompt is the gate.
 4. **Write the script** with these defaults:
-   - Under `{{MAX_AGENTS}}` agents. For long lists, batch items per agent and `log()` anything
-     dropped.
+   - At most `{{MAX_AGENTS}}` agents. For long lists, batch items per agent and `log()` anything
+     dropped. Enforce it in code: route every call through this guard, never `agent()` directly:
+     `let n = 0; const run = (p, o) => { if (++n > {{MAX_AGENTS}}) throw new Error('agent cap'); return agent(p, o) }`
+   - Phase titles start with their stage word (`Scan`, `Search`, `List`, `Fetch`, `Verify`,
+     `Judge`, `Synthesize`), e.g. `Scan repos`. Why: Mode: cost checks each phase's model by
+     that word, and a phase called "Hunt" or "Recon" goes unchecked.
    - Verify and judge in batches of 5-10 items per agent, never one agent per item. Why: one
      verifier per finding is what blows past the cap.
-   - Per `agent()` call: scan, search, list, fetch → `model: '{{SCAN_MODEL}}', effort:
+   - Per `run()` call: scan, search, list, fetch → `model: '{{SCAN_MODEL}}', effort:
      '{{SCAN_EFFORT}}'`; verify and judge → `model: '{{VERIFY_MODEL}}'`; final synthesis → omit
      `model` (session model).
    - `agentType: 'runner'` only for fixed mechanical checks, if that agent type exists.
    - Parallel file edits use `isolation: 'worktree'`.
-   - **Check before launch:** reread the script and confirm every `agent()` call has the model
-     its stage needs (synthesis has none), and that the worst-case agent count, including
-     per-item fan-out, is under `{{MAX_AGENTS}}`. Fix it before calling Workflow.
+   - **Check before launch:** reread the script and confirm every `run()` call has the model
+     its stage needs (synthesis has none), that no bare `agent()` call remains, and that the
+     worst-case agent count, including per-item fan-out, is at most `{{MAX_AGENTS}}`. Fix it before calling Workflow.
 5. **When it completes**, give the result first, then one cost line from Mode: cost with N=1
    (agents, minutes, cache writes, output).

@@ -45,6 +45,9 @@ def active_minutes(spans):
 
 for run in runs:
     phase = {}
+    if not os.path.exists(f"{run}/journal.jsonl"):
+        print(f"\n{os.path.basename(run)}: no journal.jsonl, skipped")
+        continue
     with open(f"{run}/journal.jsonl") as f:
         for line in f:
             e = json.loads(line)
@@ -74,8 +77,10 @@ for run in runs:
     total = {k: sum(r[k] for r in rows.values()) for k in K}
     agents = len(set().union(*(r["agents"] for r in rows.values()))) if rows else 0
     over = f"  ! over cap of {a.max}" if a.max and agents > a.max else ""
+    # headline = what drives the bill; cache reads cost ~0.1x input, so they only go in brackets
     print(f"\n{os.path.basename(run)}: {agents} agents{dur}, "
-          f"{fmt(sum(total.values()))} tokens ({fmt(total['output_tokens'])} output){over}")
+          f"{fmt(total['cache_creation_input_tokens'])} cache wr + {fmt(total['output_tokens'])} output "
+          f"({fmt(sum(total.values()))} total incl. cache reads){over}")
     print(f"{'phase':<14}{'model':<14}{'agents':>7}{'input':>9}{'cache wr':>10}{'cache rd':>10}{'output':>9}  flag")
     for (ph, model), r in sorted(rows.items(), key=lambda kv: -sum(kv[1][k] for k in K)):
         print(f"{ph[:13]:<14}{model[:13]:<14}{len(r['agents']):>7}{fmt(r['input_tokens']):>9}"
