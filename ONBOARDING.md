@@ -1,6 +1,6 @@
 # Onboarding guide for an AI agent
 
-You are setting up this skill repo (**sre-ai-skills**: reliability, operations,
+You are setting up this skill repo (**core-ai-skills**: reliability, operations,
 tooling, and the skill generator) on a computer, along with any other skill repos the
 person uses with the same generator. When you are done, every core in those repos has
 a working handler in this machine's skills directory, and the checker passes. The
@@ -68,7 +68,7 @@ Clone any repo that is not on disk, into the folder from step 0. Confirm each is
 For each repo, run the preflight against any core in it:
 
 ```bash
-bash <sre-ai-skills>/personal-skill-generator/scripts/preflight.sh <repo>/<core> main origin
+bash <core-ai-skills>/personal-skill-generator/scripts/preflight.sh <repo>/<core> main origin
 ```
 
 `PREFLIGHT: ok` means continue. `PREFLIGHT: pause` means stop and report what it
@@ -102,7 +102,7 @@ written by hand because nothing can generate it yet.
 3. Run the checker:
 
    ```bash
-   bash personal-skill-generator/scripts/check-skill.sh <sre-ai-skills>/personal-skill-generator <skills dir>/personal-skill-generator
+   bash personal-skill-generator/scripts/check-skill.sh <core-ai-skills>/personal-skill-generator <skills dir>/personal-skill-generator
    ```
 
    Fix every error. A new session is needed before the skill is listed; if you can

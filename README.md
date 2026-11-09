@@ -1,4 +1,4 @@
-# sre-ai-skills
+# core-ai-skills
 
 Portable cores for personal agent skills. Each directory here is the
 general function of one skill. The machine-specific half (a thin handler holding
