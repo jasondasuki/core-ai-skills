@@ -47,6 +47,13 @@ bill at about a tenth of fresh input, so judge cost by cache writes and output f
 
 The arguments are the task.
 
+0. **Elaborate and confirm.** Spawn one read-only agent (Explore type if it exists) with
+   `model: '{{SCAN_MODEL}}'`, `effort: '{{SCAN_EFFORT}}'`. Brief: rewrite the task as a precise
+   prompt (goal, scope and where to look, what counts as done, output shape, constraints,
+   anything ambiguous), checking names and paths with a few reads. Show the elaborated prompt,
+   then ask the user (AskUserQuestion if available): use it, edit it, or use the original. Wait
+   for the answer; the chosen text is the task from here on. Skip this step if the user says
+   "no elaborate" in the arguments.
 1. **Scout inline** (a few Glob/Grep/ls calls, no agents) to find the real work-list. If the task
    fits one session (roughly under 5 items or one file), say so and do it inline; no workflow.
 2. **Load** the `workflow-authoring` skill.
