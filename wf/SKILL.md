@@ -19,7 +19,7 @@ model so the defaults can be tuned. Claude Code only: it needs the Workflow tool
 | `{{PROJECTS_DIRS}}` | Space-separated Claude Code projects folders that hold workflow run journals |
 | `{{MAX_AGENTS}}` | Agent count to stay under per workflow |
 | `{{SCAN_MODEL}}` / `{{SCAN_EFFORT}}` | Model and effort for scan, search, list and fetch stages |
-| `{{VERIFY_MODEL}}` | Model for verify and judge stages |
+| `{{VERIFY_MODEL}}` | Model for verify, judge, edit and write stages |
 | `{{PROTECTED_SYSTEMS}}` | Systems no agent may change without the user's explicit approval for that exact change |
 
 ## Rules
@@ -62,13 +62,13 @@ The arguments are the task.
    - At most `{{MAX_AGENTS}}` agents. For long lists, batch items per agent and `log()` anything
      dropped. Enforce it in code: route every call through this guard, never `agent()` directly:
      `let n = 0; const run = (p, o) => { if (++n > {{MAX_AGENTS}}) throw new Error('agent cap'); return agent(p, o) }`
-   - Phase titles start with their stage word (`Scan`, `Search`, `List`, `Fetch`, `Verify`,
+   - Phase titles start with their stage word (`Scan`, `Search`, `List`, `Fetch`, `Verify`, `Edit`, `Write`,
      `Judge`, `Synthesize`), e.g. `Scan repos`. Why: Mode: cost checks each phase's model by
-     that word, and a phase called "Hunt" or "Recon" goes unchecked.
+     that word and flags a phase called "Hunt" or "Recon" as `! no stage word`.
    - Verify and judge in batches of 5-10 items per agent, never one agent per item. Why: one
      verifier per finding is what blows past the cap.
    - Per `run()` call: scan, search, list, fetch → `model: '{{SCAN_MODEL}}', effort:
-     '{{SCAN_EFFORT}}'`; verify and judge → `model: '{{VERIFY_MODEL}}'`; final synthesis → omit
+     '{{SCAN_EFFORT}}'`; verify, judge, edit and write → `model: '{{VERIFY_MODEL}}'`; final synthesis → omit
      `model` (session model).
    - `agentType: 'runner'` only for fixed mechanical checks, if that agent type exists.
    - Parallel file edits use `isolation: 'worktree'`.
