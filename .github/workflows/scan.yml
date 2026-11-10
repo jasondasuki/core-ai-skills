@@ -27,3 +27,9 @@ jobs:
           for d in $(git ls-files '*/test_*.py' | xargs -n1 dirname | sort -u); do
             python3 -m unittest discover -s "$d" -p 'test_*.py'
           done
+      - name: Install into an empty skills directory
+        run: bash install.sh "$RUNNER_TEMP/skills"
+        env:
+          MODEL: test-model
+          EFFORT: high
+          SUBAGENT_MODEL: test-subagent-model
