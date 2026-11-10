@@ -80,8 +80,11 @@ switch-to-main and pull) environment variables.
 
 ## Step 3 - bootstrap the generator's handler
 
-The generator makes every other handler, so it must exist first, and it has to be
-written by hand because nothing can generate it yet.
+The generator makes every other handler, so it must exist first. The quick way is
+`bash install.sh <skills dir>` from this repo: it writes and checks the generator's
+handler and the `onboard-skills` handler, taking `MODEL`, `EFFORT` and
+`SUBAGENT_MODEL` from the environment (the step 0 defaults). Then fill the rows it
+left `UNSET` from the step 0 answers and go to step 4. To write it by hand instead:
 
 1. Copy `personal-skill-generator/templates/handler.SKILL.md` to
    `<skills dir>/personal-skill-generator/SKILL.md`.

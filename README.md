@@ -12,8 +12,33 @@ here.
 <skill-name>/scripts/      deterministic helpers
 ```
 
-Setting up a new computer (or pointing an AI agent at this repo)? Follow
-[ONBOARDING.md](ONBOARDING.md).
+## Install
+
+Needs `git`, `bash`, and an agent runtime that loads skills from a folder (for
+Claude Code that is `.claude/skills` in your home folder).
+
+```bash
+git clone https://github.com/jasondasuki/core-ai-skills.git
+bash core-ai-skills/install.sh <skills-dir>
+```
+
+The installer asks for a model, an effort and a subagent model, then writes the
+first two handlers (`personal-skill-generator` and `onboard-skills`). Start a new
+agent session and say **onboard skills**: it creates a handler for every other
+skill and asks one batch of questions. Re-running the installer is safe; it never
+overwrites a handler.
+
+Prefer to let an agent do all of it, or want to know what each step does? Point
+the agent at [ONBOARDING.md](ONBOARDING.md).
+
+## Update
+
+Nothing to run for existing skills: every skill fast-forwards this repo to the
+latest `main` before it runs (set `PREFLIGHT_FF=0` to turn that off). Say
+**onboard skills** to pick up skills added since you installed. Your handlers hold
+your own values and are never changed by an update.
+
+## Maintain
 
 Create and maintain skills with `personal-skill-generator`. Check one pair with:
 
