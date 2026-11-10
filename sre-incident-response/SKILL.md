@@ -1,6 +1,6 @@
 ---
 name: sre-incident-response
-description: Coordinate a live production incident and write its postmortem, in three modes: new (open an incident), continue (pick up an incident that already has a log, in a new session or after a break, or take over one that another agent posted in Slack from the link to its thread), and postmortem (write up an incident that is resolved or closed). As incident coordinator it opens a timestamped incident log, proposes a severity, routes the analysis to whichever investigation skills fit what it was given (the roster of investigators is configured outside the skill, and the user can name any investigation skill for a run), keeps a running state of impact, hypothesis and actions, drafts status updates, and recommends only reversible mitigations without ever applying them. At every close, resolved or not, it turns the log and the investigators' final root causes into a blameless postmortem HTML report through the report skill. Use whenever the user says "we have an incident", "production is down", "declare an incident", "SEV1", "SEV2", "outage", "run this incident", "keep the timeline", "draft a status update", "continue the incident", "resume the incident", "pick up where we left off", "take over this incident" with a Slack thread link, "it is over", "write the postmortem", "post-incident review", "postmortem for the closed incident", "incident report", or "RCA document for the incident", or pastes an alert link and says it is customer-impacting - even if they do not say incident. Prefer it over the individual investigation skills whenever an incident, SEV, outage, or customer impact is declared, then call them; a bare alert link, symptom, or failing workload with no incident declared goes to those skills directly.
+description: Coordinate a live production incident and write its postmortem, in three modes: new (open an incident), continue (pick up an incident that already has a log, or take over one another agent posted in Slack from its thread link), and postmortem (write up a resolved or closed incident). Opens a timestamped incident log, proposes a severity, routes the analysis to the configured investigation skills, drafts status updates, and recommends reversible mitigations without applying them. Every close produces a postmortem HTML report through the report skill. Use whenever the user says "we have an incident", "production is down", "SEV1", "outage", "continue the incident", "take over this incident", "it is over", "write the postmortem", or pastes an alert link and says it is customer-impacting - even if they do not say incident. Prefer it over the individual investigation skills whenever an incident, SEV, outage or customer impact is declared; a bare alert, symptom or failing workload goes to those skills directly.
 ---
 
 # SRE incident response
@@ -48,6 +48,7 @@ literal path, model, or skill name in this file.
 | `{{SLACK_REACT_TOOL}}` | The tool that adds a reaction to a message, or `none` |
 | `{{CLOSED_REACTION}}` | Name of the reaction added to the incident post at close |
 | `{{HUMANIZER_SKILL}}` | Skill that rewrites AI-sounding prose without changing what it says |
+| `{{TRACKER_SKILL}}` | Skill that files the postmortem's open action items in the issue tracker, offered at close, or `none` |
 | `{{SCHEDULER_TOOLS}}` | The tools that schedule and delete a recurring session job, or `none` |
 | `{{WATCH_INTERVAL_MINUTES}}` | How often the thread watch checks Slack |
 | `{{WATCH_SUBAGENT_MODEL}}` | Model for the read-only subagent that each watch check spawns |
@@ -65,7 +66,9 @@ literal path, model, or skill name in this file.
    `{{SLACK_CHANNEL}}` (once per incident), replies in the incident's Slack thread (the post's own,
    or one the commander linked: updates and the closing reply), the one canvas row that `{{SLACK_CANVAS_ROW}}` names, and one
    `{{CLOSED_REACTION}}` reaction on your own incident post at close (see
-   "Post the summary", "Watch the thread" and "Close"). A
+   "Post the summary", "Watch the thread" and "Close"). Filing action items is
+   not a fifth exception: at close you only offer them, and `{{TRACKER_SKILL}}`
+   files them after its own preview and the commander's approval. A
    coordinator that also changes the system makes the timeline untrustworthy and
    removes the commander's decision. Propose the step, say who would run it, and
    wait. A debug container attached to a pod is a change too: it stays on the pod

@@ -30,6 +30,10 @@ SCOPE (apply to every query unless a probe says otherwise)
 - env: <env>   service: <service>   version: <version or "all">
 - alerting group / extra tags: <group tags or "none">
 - T0 (alarm start, UTC): <timestamp>
+- These tag values are exact, copied from the monitor or link. Use them
+  character for character; never swap in a similar value (a longer or shorter
+  environment name, a service alias). If one returns nothing, report it under
+  "data quality" and stop; do not try variants.
 
 YOUR DOMAIN: <metrics | logs | traces | changes | infra | frontend | database>
 
@@ -114,6 +118,9 @@ END BRIEF
 - **One precise query per probe**, not "look at the logs for errors". The planner
   chose the query to answer one question; a vague probe makes the executor
   explore and the report unusable.
+- **Exact tag values**, copied from the monitor query or the link, not typed
+  from memory. An executor that is handed the wrong environment value returns
+  clean-looking empty results.
 - **Explicit UTC windows**, never "last hour". Relative times drift between the
   planner's clock and the executor's.
 - **The expect and falsify lines are in the brief**, so the executor can report

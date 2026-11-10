@@ -157,6 +157,12 @@ since your start (read the thread once more: if there is one, skip the post, log
    log a `note` that the watch ended.
 4. Reply to the commander: the report's path and the command to open it, the
    closing reply's link, and the open action items.
+5. When `{{TRACKER_SKILL}}` is not `none` and the postmortem has open action items,
+   end that reply with one offer to file them. On a yes, hand `{{TRACKER_SKILL}}`
+   the action items as the postmortem words them (type, reason, incident id, report
+   path) and let it run its own duplicate check, preview and approval; you file
+   nothing yourself. Log a `note` saying which items were handed over. Without a
+   yes, do nothing more and do not ask again.
 
 ## If something fails
 
@@ -173,4 +179,5 @@ since your start (read the thread once more: if there is one, skip the post, log
 
 If the incident has no thread (no `watch.json`, or the Slack tools are `none`): skip
 the gate, the row, the thread reading, the post, the reaction and the watch. Do 3 and
-4, keep the HTML in `{{OUTPUT_DIR}}`, and give the commander its path.
+4, keep the HTML in `{{OUTPUT_DIR}}`, give the commander its path, and make the
+offer in 6.5.
