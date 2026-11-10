@@ -21,3 +21,9 @@ jobs:
         run: .github/scripts/scan-repo.sh "${BASE_REF:+origin/$BASE_REF}"
         env:
           BASE_REF: ${{ github.base_ref }}
+      - name: Run unit tests
+        run: |
+          set -e
+          for d in $(git ls-files '*/test_*.py' | xargs -n1 dirname | sort -u); do
+            python3 -m unittest discover -s "$d" -p 'test_*.py'
+          done

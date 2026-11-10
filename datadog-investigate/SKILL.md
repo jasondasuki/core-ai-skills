@@ -1,6 +1,6 @@
 ---
 name: datadog-investigate
-description: Investigate a production alert, monitor, incident, or symptom the way Datadog's Bits AI SRE does - hypothesis-driven root cause analysis using the Datadog MCP as the only evidence source. Takes one or more Datadog alarm links (monitor, event, incident, trace, log, dashboard, synthetic URLs) pasted on their own, parses them, and investigates autonomously with no further questions. Builds a hypothesis tree, tests each branch with targeted logs/metrics/traces/events/change queries, prunes what the data rejects, recurses into what it supports, and reports validated / invalidated / inconclusive with the queries as evidence. Use whenever the user pastes a datadoghq.com link (even with no other text), or gives a monitor name or ID, an alert, an incident, an error spike, latency regression, "why is X failing/slow/down", "what changed", "investigate this alert", "RCA", or "bits investigate" - even if they do not mention Datadog. Prefer it for an alert, a Datadog link, or a symptom with no named cluster workload; a named failing pod, deployment, or namespace fits the cluster triage skill, and a declared incident, SEV, outage, or customer impact goes to the incident coordination skill, which calls this one. Runs a normal investigation by default; runs a deep investigation (more hypotheses, more rounds, dependency walks, disconfirmation checks) when the user asks for "deep", "deep dive", "thorough", "full RCA", or "dig deeper".
+description: Investigate a production alert, monitor, incident, or symptom the way Datadog's Bits AI SRE does - hypothesis-driven root cause analysis using the Datadog MCP as the only evidence source. Takes Datadog links (monitor, event, incident, trace, log, dashboard, synthetic) and investigates autonomously: builds a hypothesis tree, tests each branch with targeted queries, and reports validated / invalidated / inconclusive with the queries as evidence. Use whenever the user pastes a datadoghq.com link, or gives a monitor name or ID, an alert, an error spike, "why is X failing/slow/down", "RCA", or "bits investigate" - even if they do not mention Datadog. Prefer it for an alert, a Datadog link, or a symptom with no named cluster workload; a named failing pod, deployment, or namespace fits the cluster triage skill, and a declared incident, SEV, outage, or customer impact goes to the incident coordination skill. Runs deep when the user asks for "deep", "thorough", "full RCA", or "dig deeper".
 ---
 
 # Datadog investigation (Bits-style)
@@ -178,7 +178,11 @@ Run these in parallel where independent:
      unknowable.
 2. **Resolve the entity.** `search_datadog_entities` for the owning service,
    team, and direct dependencies (upstream callers, downstream calls). Note
-   `service`, `env`, `version` tags to reuse in every later query.
+   `service`, `env`, `version` tags to reuse in every later query. Copy each
+   value exactly as the monitor query, the link, or the entity shows it; never
+   normalise or guess one (an environment tagged `prd` is not `prod`). A value
+   you did not see in the telemetry is unverified: say so, and make the first
+   probe confirm it.
 3. **Pin the timeline.** Establish `T0` (when the monitor flipped or the
    symptom began) and the pre-incident baseline window. Use the monitor's
    evaluation window, not "now".
@@ -272,7 +276,7 @@ executor domain). You are not asking permission; it lets the user follow along.
    model: it would run the legwork on the expensive model and defeat the split.
 2. Brief each executor with the template in `references/executor-brief.md`
    (read it now). Fill every field; executors cannot see this conversation. Pass
-   the problem statement, scope tags, windows, the probes with their expect and
+   the problem statement, scope tags with their exact values, windows, the probes with their expect and
    falsify lines, the exact tool names (with the `{{DATADOG_MCP_PREFIX}}`
    prefix), and the Datadog skill guides they must load first.
 3. Collect every result before judging any of them. If an executor fails, times
